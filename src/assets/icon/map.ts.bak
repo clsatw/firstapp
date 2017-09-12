@@ -1,0 +1,90 @@
+/* The most important thing when using Google Maps in HTML is specifying
+** the height of the map element 'DIV', otherwise the maps will never be shown.
+** make sure that Google Maps Javascript API and Google Maps Directions Service is enabled
+** on Google Developer console.
+*/
+import { Component, ViewChild, ElementRef } from '@angular/core';
+import { IonicPage } from 'ionic-angular';
+import { NavController } from 'ionic-angular';
+
+import { } from '@types/googlemaps';
+
+declare var google: any;
+
+@IonicPage()
+@Component({
+  selector: 'page-map',
+  templateUrl: 'map.html'
+})
+export class HomePage {
+
+  @ViewChild('map') mapElement: ElementRef;
+  map: any;
+  infoWindow: any;
+
+  constructor(public navCtrl: NavController) {
+
+  }
+
+  ionViewDidLoad() {
+    this.initMap();
+  }
+
+  initMap() {
+
+    this.map = new google.maps.Map(this.mapElement.nativeElement, {
+      zoom: 14,
+      center: { lat: 24.961950, lng: 121.528340 },
+      mapTypeId: google.maps.MapTypeId.ROADMAP,
+      // styles: myStyle
+    });
+
+    let marker = new google.maps.Marker({
+      position: { lat: 24.961950, lng: 121.528340 },
+      map: this.map,
+      // icon: 'https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png',
+      icon: 'assets/images/ipcam24.png',
+      title: 'speedy camera!',
+    });
+    // this.map.data.loadGeoJson('https://drive.google.com/file/d/0B7fxnJsex02xMDl3NXd2ZnU0UHc/view?usp=sharing');
+
+    // this.map.data.loadGeoJson('assets/speedy.geo.json');
+
+    this.map.data.loadGeoJson('assets/speedy.geo.json', null, (results: Array<google.maps.Data.Feature>) => {
+      console.log('call back');
+      let address: string;
+      let speedLimit: string;
+      for (let res of results) {
+        speedLimit = res.getProperty('limit');
+        address = res.getProperty('Address');
+        res.getGeometry().forEachLatLng(latLng => {
+          this.addMarker(latLng, address);
+          //marker.setMap(this.map);
+        })
+      }
+    });
+
+  }
+
+  addMarker(latLng, content) {
+    let markerOptions = {
+      position: latLng,
+      map: this.map,
+      // label: 'speedy camera!',
+      icon: 'assets/images/ipcam24.png'
+    }
+    let marker = new google.maps.Marker(markerOptions);
+
+    let infowindowOptions = {
+      content: content,
+    };
+    let infowindow = new google.maps.InfoWindow(infowindowOptions);
+    marker.addListener('click', (e) => {
+      infowindow.open(this.map, marker);
+    });
+  }
+
+  addInfoWindow(content) {
+
+  }
+}

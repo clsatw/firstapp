@@ -1,0 +1,213 @@
+LatLng markerPosition = marker.getPosition();
+myLocation = locationManager.getLastKnownLocation(provider);
+Location markerLoc = new Location("marker");
+markerLoc.setLatitude(markerPosition.latitude);
+markerLoc.setLongitude(markerPosition.longitude);
+float meters = myLocation.distanceTo(markerLoc);
+
+
+down vote
+accepted
+First you have to add the eventlistener
+
+google.maps.event.addListener(map, 'click', find_closest_marker);
+Then create a function that loops through the array of markers and uses the haversine formula to calculate the distance of each marker from the click.
+
+function rad(x) {return x*Math.PI/180;}
+function find_closest_marker( event ) {
+    var lat = event.latLng.lat();
+    var lng = event.latLng.lng();
+    var R = 6371; // radius of earth in km
+    var distances = [];
+    var closest = -1;
+    for( i=0;i<map.markers.length; i++ ) {
+        var mlat = map.markers[i].position.lat();
+        var mlng = map.markers[i].position.lng();
+        var dLat  = rad(mlat - lat);
+        var dLong = rad(mlng - lng);
+        var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(rad(lat)) * Math.cos(rad(lat)) * Math.sin(dLong/2) * Math.sin(dLong/2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        var d = R * c;
+        distances[i] = d;
+        if ( closest == -1 || d < distances[closest] ) {
+            closest = i;
+        }
+    }
+
+    alert(map.markers[closest].title);
+
+
+
+    markers.reduce(function (prev, curr) {
+        
+            var cpos = google.maps.geometry.spherical.computeDistanceBetween(location.position, curr.position);
+            var ppos = google.maps.geometry.spherical.computeDistanceBetween(location.position, prev.position);
+        
+            return cpos < ppos ? curr : prev;
+        
+        }).position
+
+
+        function find_closest_marker( lat1, lon1 ) {    
+            var pi = Math.PI;
+            var R = 6371; //equatorial radius
+            var distances = [];
+            var closest = -1;
+        
+            for( i=0;i<markers.length; i++ ) {  
+                var lat2 = markers[i].position.lat();
+                var lon2 = markers[i].position.lng();
+        
+                var chLat = lat2-lat1;
+                var chLon = lon2-lon1;
+        
+                var dLat = chLat*(pi/180);
+                var dLon = chLon*(pi/180);
+        
+                var rLat1 = lat1*(pi/180);
+                var rLat2 = lat2*(pi/180);
+        
+                var a = Math.sin(dLat/2) * Math.sin(dLat/2) + 
+                            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(rLat1) * Math.cos(rLat2); 
+                var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+                var d = R * c;
+        
+                distances[i] = d;
+                if ( closest == -1 || d < distances[closest] ) {
+                    closest = i;
+                }
+            }
+        
+            // (debug) The closest marker is:
+            console.log(markers[closest]);
+        }
+
+
+
+        function distance(lat1, lng1, lat2, lng2) {
+            var radlat1 = Math.PI * lat1 / 180;
+            var radlat2 = Math.PI * lat2 / 180;
+            var radlon1 = Math.PI * lng1 / 180;
+            var radlon2 = Math.PI * lng2 / 180;
+            var theta = lng1 - lng2;
+            var radtheta = Math.PI * theta / 180;
+            var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
+            dist = Math.acos(dist);
+            dist = dist * 180 / Math.PI;
+            dist = dist * 60 * 1.1515;
+    
+            //Get in in kilometers
+            dist = dist * 1.609344;
+    
+            return dist;
+        }
+
+
+        function initialize() {
+            var myPosition = new google.maps.LatLng(46.0, -125.9);
+          
+            var mapOptions = {
+              zoom: 5,
+              center: myPosition,
+              mapTypeId: 'terrain'
+            };
+          
+            var map = new google.maps.Map(document.getElementById('map'),
+                mapOptions);
+          
+            var cascadiaFault = new google.maps.Polyline({
+              path: [
+                new google.maps.LatLng(49.95, -128.1),
+                new google.maps.LatLng(46.26, -126.3),
+                new google.maps.LatLng(40.3, -125.4)
+              ]
+            });
+          
+            cascadiaFault.setMap(map);
+          
+            if (google.maps.geometry.poly.isLocationOnEdge(myPosition, cascadiaFault, 10e-1)) {
+              alert("Relocate!");
+            }
+          }
+          
+          google.maps.event.addDomListener(window, 'load', initialize);
+
+
+
+          / This example requires the Geometry library. Include the libraries=geometry
+          // parameter when you first load the API. For example:
+          // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=geometry">
+          
+          var marker1, marker2;
+          var poly, geodesicPoly;
+          
+          function initMap() {
+            var map = new google.maps.Map(document.getElementById('map'), {
+              zoom: 4,
+              center: {lat: 34, lng: -40.605}
+            });
+          
+            map.controls[google.maps.ControlPosition.TOP_CENTER].push(
+                document.getElementById('info'));
+          
+            marker1 = new google.maps.Marker({
+              map: map,
+              draggable: true,
+              position: {lat: 40.714, lng: -74.006}
+            });
+          
+            marker2 = new google.maps.Marker({
+              map: map,
+              draggable: true,
+              position: {lat: 48.857, lng: 2.352}
+            });
+          
+            var bounds = new google.maps.LatLngBounds(
+                marker1.getPosition(), marker2.getPosition());
+            map.fitBounds(bounds);
+          
+            google.maps.event.addListener(marker1, 'position_changed', update);
+            google.maps.event.addListener(marker2, 'position_changed', update);
+          
+            poly = new google.maps.Polyline({
+              strokeColor: '#FF0000',
+              strokeOpacity: 1.0,
+              strokeWeight: 3,
+              map: map,
+            });
+          
+            geodesicPoly = new google.maps.Polyline({
+              strokeColor: '#CC0099',
+              strokeOpacity: 1.0,
+              strokeWeight: 3,
+              geodesic: true,
+              map: map
+            });
+          
+            update();
+          }
+          
+          function update() {
+            var path = [marker1.getPosition(), marker2.getPosition()];
+            poly.setPath(path);
+            geodesicPoly.setPath(path);
+            var heading = google.maps.geometry.spherical.computeHeading(path[0], path[1]);
+            document.getElementById('heading').value = heading;
+            document.getElementById('origin').value = path[0].toString();
+            document.getElementById('destination').value = path[1].toString();
+          }
+
+          When navigating on a sphere, a heading is the angle of a direction from a fixed reference point, usually true north. Within the Google Maps API, a heading is defined in degrees from true north, where headings are measured clockwise from true north (0 degrees). You may compute this heading between two locations with the computeHeading() method, passing it two from and to LatLng objects.
+          
+          Given a particular heading, an origin location, and the distance to travel (in meters), you can calculate the destination coordinates using computeOffset().
+
+          function update() {
+            var path = [marker1.getPosition(), marker2.getPosition()];
+            poly.setPath(path);
+            geodesicPoly.setPath(path);
+            var heading = google.maps.geometry.spherical.computeHeading(path[0], path[1]);
+            document.getElementById('heading').value = heading;
+            document.getElementById('origin').value = path[0].toString();
+            document.getElementById('destination').value = path[1].toString();
+          }

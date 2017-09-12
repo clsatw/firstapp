@@ -1,0 +1,60 @@
+<ion-header>
+  <ion-navbar color='energy'>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Add a Product</ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+
+
+  <!-- reactive form - editing -->
+  <form [formGroup]="heroForm" (ngSubmit)='onSubmit()' novalidate>
+    <fieldset>
+      <div class="form-group" [ngClass]="{'has-error': formError.name }">       
+        <ion-item>
+          <ion-label floating>Name</ion-label>
+          <ion-input type='text' formControlName="name"></ion-input>
+        </ion-item>
+        <span class='help-block' *ngIf='formError.name'>{{formError.name}}</span>
+      </div>
+      <!--  
+        <span class='errors' *ngIf="heroForm.get('name').invalid && heroForm.get('name').touched">
+      <span *ngIf="heroForm.get('name').hasError('required')"> {{titleAlert}}</span>
+        <span *ngIf="heroForm.get('name').hasError('minlength')">Min 3 chars</span>
+        <span *ngIf="heroForm.get('name').hasError('notmatch')"> {{name.errors.nomatch.expected}}</span>
+        </span>
+      -->
+
+      <div class="form-group" [ngClass]="{'has-error': formError.price }">
+        
+        <ion-item>
+          <ion-label floating>Price</ion-label>
+          <ion-input formControlName="price"></ion-input>
+        </ion-item>
+        <span class='help-block' *ngIf='formError.price'>{{formError.price}}</span>
+      </div>
+
+      <div class="form-group" [ngClass]="{'has-error': formError.type }">        
+        <ion-item>
+          <ion-label floating>Type</ion-label>
+          <ion-input type='text' formControlName="type"></ion-input>
+        </ion-item>
+        <span class='help-block' *ngIf='formError.type'>{{formError.type}}</span>
+      </div>
+
+      <button ion-button block large color='primary' type="submit" [disabled]="heroForm.pristine">Save</button>
+
+    </fieldset>
+  </form>
+  <!--
+<p>Form value: {{ heroForm.value | json }}</p>
+<p>Form status: {{ heroForm.status | json }}</p>
+
+<p>name err: {{ heroForm.get('name').errors | json}}</p>
+<p>price err: {{ heroForm.get('price').errors | json}}</p>
+-->
+  <p class="error" *ngIf="errorMessage">{{errorMessage}}</p>
+</ion-content>

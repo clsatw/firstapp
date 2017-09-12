@@ -1,14 +1,46 @@
+<!--
+  Generated template for the HomePage page.
+
+  See http://ionicframework.com/docs/components/#navigation for more info on
+  Ionic pages and navigation.
+-->
 <ion-header>
-  <ion-navbar>
-    <ion-title>
-      Ionic Blank
-    </ion-title>
+  <ion-navbar color='energy'>
+    <button ion-button menuToggle>
+    <ion-icon name="menu"></ion-icon>
+  </button>
+    <ion-title>Home</ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
-  The world is your oyster.
+  <ion-slides pager>
+    <ion-slide style='background-color:green'>
+      <div class='diag'>
+        <ion-icon ios='ios-analytics' md='md-analytics' color='primary'></ion-icon>
+      </div>
+      <h2> Slide 1</h2>
+      <p> we're all in the gym for a reason</p>
+    </ion-slide>
+    <ion-slide style='background-color:blue'>
+      <div class='diag'>
+        <ion-icon ios='ios-analytics' md='md-analytics' color='secondary'></ion-icon>
+      </div>
+      <h2> Slide 2</h2>
+      <p> we're all in the gym for a reason</p>
+    </ion-slide>
+    <ion-slide style='background-color:red'>
+      <div class='diag'>
+        <ion-icon ios='ios-analytics' md='md-analytics' color='cool'></ion-icon>
+      </div>
+      <h2> Slide 3</h2>
+      <p> we're all in the gym for a reason</p>
+    </ion-slide>
+  </ion-slides>
+  <h3>Ionic Menu Starter</h3>
   <p>
-    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will be your guide.
+    If you get lost, the <a href="http://ionicframework.com/docs/v2">docs</a> will show you the way.
   </p>
+
+  <button ion-button secondary menuToggle>Toggle Menu</button>
 </ion-content>

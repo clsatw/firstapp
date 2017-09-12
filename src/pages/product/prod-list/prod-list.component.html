@@ -1,0 +1,48 @@
+<ion-header>
+  <ion-navbar color='energy'>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Product List</ion-title>
+    <ion-buttons end>
+      <button ion-button color='danger' (click)="onAdd(); $event.stopPropagation()">
+        <ion-icon name='add-circle'></ion-icon>      
+      </button>
+    </ion-buttons>
+  </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+
+  <!-- 
+  <ion-item>
+    <ion-input placeholder='Enter type' [formControl]='searchInput' [mdAutocomplete]='auto'></ion-input>
+  </ion-item>
+  <md-autocomplete #auto='mdAutocomplete'>
+    <ion-option *ngFor="let option of (filteredOptions$ | async)" [value]="option">
+      {{ option }}
+    </ion-option>
+  </md-autocomplete>
+
+  <hr/>
+-->
+  <div *ngIf='heroes'>
+    <ion-list inset>
+      <ion-item *ngFor="let hero of heroes | async">
+        <ion-thumbnail item-start>
+          <img src='{{hero.imgUrl}}'>
+        </ion-thumbnail>
+        <h2>{{hero.name}}</h2>
+        <h3 color='secondary'>{{hero.type}}</h3>
+        <!-- <p>{{hero._id}}</p> -->
+        <h3 color='gold'>{{hero.price | currency: 'NTD':true}}</h3>
+        <!-- how to fire change evt?
+          <toh-hero-button [btnLabel]="'Delete'" (change)="onDelete(hero)"></toh-hero-button>
+        -->
+        <button ion-button clear item-end (click)='onSelect(hero)'><ion-icon name="arrow-forward"></ion-icon>&nbsp; View</button>
+      </ion-item>
+    </ion-list>
+  </div>
+
+  <p class="error" *ngIf="errorMessage">{{errorMessage}}</p>
+</ion-content>

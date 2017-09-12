@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "558571822265",
+    "firebase_url": "https://test-project-c160b.firebaseio.com",
+    "project_id": "test-project-c160b",
+    "storage_bucket": "test-project-c160b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:558571822265:android:f697b94199b240ec",
+        "android_client_info": {
+          "package_name": "com.test.ajoan"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "558571822265-rrevvjstu8uv1704qqfmq1i2lt8hfkqa.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAq1BHuDf57dplvLHGI52qPpQEY970OtCI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

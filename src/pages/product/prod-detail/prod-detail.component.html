@@ -1,0 +1,71 @@
+<ion-header>
+  <ion-navbar color='energy'>
+    <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+    <ion-title>Product Details</ion-title>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content padding>
+
+
+  <!--
+<div *ngIf="hero">
+  <h2>{{hero.name}} details!</h2>
+  <div><label>id: </label>{{hero.id}}</div>
+  <div>
+    <label>name: </label>
+    <input [(ngModel)]="hero.name" placeholder="name" />
+  </div>
+</div>
+      
+  <div class="table-responsive">
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th>name</th>
+          <th>price</th>
+          <th>img</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{hero.name}}</td>
+          <td>{{hero.price}}</td>
+          <td><img [attr.src]='hero.imgUrl'/></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  -->
+
+  <div *ngIf="hero">
+    <ion-card>
+      <ion-card-header>
+        <p>{{hero.name}}</p>
+      </ion-card-header>
+      <ion-avatar item-start>
+        <img src='{{hero.imgUrl}}' />
+      </ion-avatar>
+      <ion-card-content>
+        <p>{{hero.price}}</p>
+      </ion-card-content>
+
+      <ion-item>
+        <ion-label floating>Name</ion-label>
+        <ion-input type='text' [(ngModel)]="hero.name"></ion-input>
+      </ion-item>
+      
+      <ion-buttons>
+        <button ion-button round color='accent' (click)="save()">Save</button>        
+        <button ion-button round color='danger' (click)="onDelete(hero); $event.stopPropagation()">
+            <ion-icon name='trash'></ion-icon>      
+        </button>       
+      </ion-buttons>
+    </ion-card>
+  </div>
+
+  <p class="error" *ngIf="errorMessage">{{errorMessage}}</p>
+</ion-content>

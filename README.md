@@ -24,3 +24,12 @@ $ ionic cordova run ios
 
 Substitute ios for android if not on a Mac.
 
+importants:
+    put google-services.json in platform root folder (ths same folder as package.json)
+    https://support.google.com/firebase/answer/7015592
+    
+build:
+    ionic cordova platform add android --save
+icons:
+    https://sites.google.com/site/gmapsdevelopment/
+    https://mapicons.mapsmarker.com/
