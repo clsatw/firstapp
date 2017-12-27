@@ -33,3 +33,10 @@ build:
 icons:
     https://sites.google.com/site/gmapsdevelopment/
     https://mapicons.mapsmarker.com/
+
+    // for network connection status
+    ionic cordova plugin add cordova-plugin-network-information
+    npm i -S @ionic-native/network
+
+    history:
+    ionic cordova plugin add cordova-plugin-insomnia

@@ -4,10 +4,15 @@ import { IonicPage, ToastController } from 'ionic-angular';
 // import { NativeAudio } from '@ionic-native/native-audio';
 import { TextToSpeech } from '@ionic-native/text-to-speech';
 import { BackgroundMode } from '@ionic-native/background-mode';
+import { Insomnia } from '@ionic-native/insomnia';
+import {Subscription} from 'rxjs/Subscription';
+// import { Subject } from 'rxjs/Subject';
 
 import { } from '@types/googlemaps';
 
 import { SpeedyInfo } from './mymap.model';
+import { NetStatusProvider } from '../../providers/net-status/net-status';
+
 
 /**
  * Generated class for the MymapPage page.
@@ -35,23 +40,54 @@ export class MymapPage {
   markers: Array<google.maps.Marker> = [];
   lineCoords: Array<google.maps.LatLng> = [];
   infoWindow: google.maps.InfoWindow;
+  watchPosId: number;
+  speed = 0;
+
+  connected$: Subscription;
+  disconnected$: Subscription;
 
   // latLng: google.maps.LatLng;
 
-  constructor(public toastCtrl: ToastController, private tts: TextToSpeech, private backgroundMode: BackgroundMode) {
+  constructor(public toastCtrl: ToastController, private tts: TextToSpeech,
+             private backgroundMode: BackgroundMode,
+            private netStatus: NetStatusProvider, private insomnia: Insomnia) {
 
+  } 
+
+  ionViewWillLeave(){
+    this.connected$.unsubscribe();
+    this.disconnected$.unsubscribe();
+    this.insomnia.allowSleepAgain()
+    .then(
+      () => console.log('success'),
+      () => console.log('error')
+    );
+  }
+
+  ionViewDidEnter(){
+    this.connected$ = this.netStatus.onConnect();
+    this.disconnected$ = this.netStatus.onDisconnect();
   }
 
   ionViewDidLoad() {
     this.backgroundMode.enable();
-    this.backgroundMode.moveToBackground();
+    // this.backgroundMode.moveToBackground();
     this.backgroundMode.disableWebViewOptimizations();
 
     this.initMap();
     // this.map.data.loadGeoJson('assets/speedy.geo.json');
     this.getCurrentPos();
     this.loadGeoFile();
-    this.trackPos();
+    this.watchPosId = this.trackPos();
+    this.insomnia.keepAwake()
+    .then(
+      () => console.log('success'),
+      () => console.log('error')
+    );
+  }
+
+  ionViewDideave(){
+    navigator.geolocation.clearWatch(this.watchPosId);
   }
 
 
@@ -80,9 +116,9 @@ export class MymapPage {
       position: latLng,
       map: this.map,
       title: `${info.Address} ${info.direct}`,
-      label: info.limit,
-      // label: 'speedy camera!',
-      // icon: 'assets/icon/icons8-50t.png',
+      label: info.limit,     
+      icon: 'assets/icon/icons8-marker-40.png',
+      // icon: 'assets/icon/icons8-Point of Interest-48.png',
       // icon: 'http://maps.google.com/mapfiles/ms/micons/camera.png',
     }
 
@@ -108,7 +144,7 @@ export class MymapPage {
       myinfoWindow.open(this.map, marker);
     });
 
-    marker.setIcon('http://maps.google.com/mapfiles/kml/pal4/icon46.png');
+    // marker.setIcon('http://maps.google.com/mapfiles/kml/pal4/icon46.png');
 
     // marker.setIcon('http://labs.google.com/ridefinder/images/mm_20_orange.png');
     // marker.setMap(this.map);
@@ -157,7 +193,7 @@ export class MymapPage {
           icon: {
             path: google.maps.SymbolPath.CIRCLE,
             scale: 7,
-            strokeColor: '#393',
+            strokeColor: '#ff0000',
             // strokeWeight: 13,
             // fillColor:'#ff0000',
             fillOpacity: 1
@@ -170,9 +206,9 @@ export class MymapPage {
         this.map.setCenter(latLng);
         this.statusMsg = 'does support geoloc';
         this.presentToast(this.statusMsg);
-        this.tts.speak({ text: '前方有測速照相', locale: 'zh-TW' })
+        this.tts.speak({ text: '定位完成', locale: 'zh-TW' })
           .then(() => console.log('Success'))
-          .catch((reason: any) => console.log(reason));
+          .catch((err: any) => this.presentToast('voice' + err));
 
       }), ((err) => {
         // this.alert.alert('support geoloc');        
@@ -216,97 +252,137 @@ export class MymapPage {
   }
 
   find_closest_marker(currentCoords) {
-    let rad = (x => { return x * Math.PI / 180; });
-
+    const deg2rad = (deg => { return deg * Math.PI / 180; });
+    const HalfPi = 1.5707963;
+    let b, u, v, c;
+    const R = 3956000; // the radius gives you the measurement unit    
     let lat = currentCoords.latitude;
     let lng = currentCoords.longitude;
-    let R = 6371; // radius of earth in km
-    let i = 0;
-    let distances = [];
-    let closest = -1;
+    let a = HalfPi - deg2rad(lat);
     for (let marker of this.markers) {
       let mlatLng = marker.getPosition();
       let mLat = mlatLng.lat();
       let mLng = mlatLng.lng();
+      b = HalfPi - deg2rad(mLat)
       // skip checking markers in diffent cities.
-      if (Math.trunc(mLat) === Math.trunc(lat) && Math.trunc(mLng) === Math.trunc(lng)) {
-        let dLat = rad(mLat - lat);
-        let dLong = rad(mLng - lng);
-        let a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(rad(lat)) * Math.cos(rad(lat)) * Math.sin(dLong / 2) * Math.sin(dLong / 2);
-        let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      if (Math.trunc(mLat) === Math.trunc(lat) && Math.trunc(mLng) === Math.trunc(lng)) {         
+        u = a * a + b * b;
+        v = - 2 * a * b * Math.cos(deg2rad(mLng) - deg2rad(lng));
+        c = Math.sqrt(Math.abs(u + v));
         this.d = R * c;
-
-        distances[i] = this.d;
-
-        if (this.d < 0.2) {
-          let address = this.markers[closest].getTitle();
-          let limit = this.markers[closest].getLabel().text;
-          this.tts.speak({ text: `前方${address}有測速照相限速${limit}公里`, locale: 'zh-TW' })
+        if (this.d < 70) {
+          let address = marker.getTitle();
+          let limit = marker.getLabel();
+          this.tts.speak({ text: `前方70公尺${address}有測速照相限速${limit}公里`, locale: 'zh-TW' })
             .then(() => console.log('Success'))
             .catch((reason: any) => console.log(reason));
           return;
-        }
-
-        if (closest === -1 || this.d < distances[closest]) {
-          closest = i;
-        }
-        i++;
+        }    
       }
     }
-    // alert(this.markers[closest].getTitle());
-    // this.nativeAudio.preloadSimple('uniqueId1', 'path/to/file.mp3').then(onSuccess, onError);  
-
-    // this.presentToast(`距離: ${distances[closest]}km., ${this.markers[closest].getTitle()}`);
   }
-
-  trackPos() {
-    /*
-    const subscription = this.geolocation.watchPosition()
-      .filter((p) => p.coords !== undefined) //Filter Out Errors
-      .subscribe(position => {
-        console.log(position.coords.longitude + ' ' + position.coords.latitude);
-      });
+      /*
+      find_closest_marker(currentCoords) {
+        let deg2rad = (deg => { return deg * Math.PI / 180; });
+    
+        let lat = currentCoords.latitude;
+        let lng = currentCoords.longitude;
+        let R = 6371000; // radius of earth in m
+        let i = 0;
+        let distances = [];
+        let closest = -1;
+        for (let marker of this.markers) {
+          let mlatLng = marker.getPosition();
+          let mLat = mlatLng.lat();
+          let mLng = mlatLng.lng();
+          // skip checking markers in diffent cities.
+          if (Math.trunc(mLat) === Math.trunc(lat) && Math.trunc(mLng) === Math.trunc(lng)) {
+            let dLat = deg2rad(mLat - lat);
+            let dLong = deg2rad(mLng - lng);
+            let a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+              Math.cos(deg2rad(lat)) * Math.cos(deg2rad(lat)) * Math.sin(dLong / 2) * Math.sin(dLong / 2);
+            let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            // in meter
+            this.d = R * c;
+            distances[i] = this.d;
+    
+            if (this.d < 70) {
+              let address = this.markers[closest].getTitle();
+              let limit = this.markers[closest].getLabel().text;
+              this.tts.speak({ text: `前方70公尺${address}有測速照相限速${limit}公里`, locale: 'zh-TW' })
+                .then(() => console.log('Success'))
+                .catch((reason: any) => console.log(reason));
+              return;
+            }
+    
+            if (closest === -1 || this.d < distances[closest]) {
+              closest = i;
+            }
+            i++;
+          }
+        }
+        // alert(this.markers[closest].getTitle());
+        // this.nativeAudio.preloadSimple('uniqueId1', 'path/to/file.mp3').then(onSuccess, onError);  
+    
+        // this.presentToast(`距離: ${distances[closest]}km., ${this.markers[closest].getTitle()}`);
+      }
     */
-    let id, target, options;
 
-    let success = ((pos) => {
-      let coords = pos.coords;
-      console.log(`lat: ${coords.latitude}, lng: ${coords.longitude}`);
-      // pass in current postion.
-      this.redraw(coords);
-      this.find_closest_marker(coords);
+      trackPos() {
+        /*
+        const subscription = this.geolocation.watchPosition()
+          .filter((p) => p.coords !== undefined) //Filter Out Errors
+          .subscribe(position => {
+            console.log(position.coords.longitude + ' ' + position.coords.latitude);
+          });
+        */
+        let id, target, options;
 
-      if (target.latitude === coords.latitude && target.longitude === coords.longitude) {
-        console.log('Congratulations, you reached the target');
-        navigator.geolocation.clearWatch(id);
+        let success = ((pos) => {
+          let coords = pos.coords;
+          this.speed = coords.speed;
+          console.log(`lat: ${coords.latitude}, lng: ${coords.longitude}`);
+          // pass in current postion.
+          this.redraw(coords);
+          this.find_closest_marker(coords);
+
+          if (target.latitude === coords.latitude && target.longitude === coords.longitude) {
+            console.log('Congratulations, you reached the target');
+            navigator.geolocation.clearWatch(id);
+          }
+        });
+
+        function error(err) {
+          console.warn('ERROR(' + err.code + '): ' + err.message);
+        }
+
+        target = {
+          latitude: 0,
+          longitude: 0
+        };
+
+        options = {
+          enableHighAccuracy: false,
+          /* If timeout is zero (0) or negative, the results depend on the behavior of
+          ** the location provider.
+          */
+          timeout: 0,
+          /*
+          ** if maxmumAge (in ms) is non-zero and a cached position that is no older than maximumAge is available,
+          ** the cached position is used instead of obtaining an updated location.
+          */
+          maximumAge: 1500
+        };
+
+        return navigator.geolocation.watchPosition(success, error, options);       
       }
-    });
 
-    function error(err) {
-      console.warn('ERROR(' + err.code + '): ' + err.message);
+      presentToast(msg: string) {
+        let toast = this.toastCtrl.create({
+          cssClass: '#status',
+          message: msg,
+          duration: 6000
+        });
+        toast.present(toast);
+      }
     }
-
-    target = {
-      latitude: 0,
-      longitude: 0
-    };
-
-    options = {
-      enableHighAccuracy: false,
-      timeout: 5000,
-      maximumAge: 0
-    };
-
-    id = navigator.geolocation.watchPosition(success, error, options);
-  }
-
-  presentToast(msg: string) {
-    let toast = this.toastCtrl.create({
-      cssClass: '#status',
-      message: msg,
-      duration: 6000
-    });
-    toast.present(toast);
-  }
-}

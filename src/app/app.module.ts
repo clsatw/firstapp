@@ -12,10 +12,10 @@ import firebase from 'firebase';
 // import { GooglePlus } from '@ionic-native/google-plus';
 import { Camera } from '@ionic-native/camera';
 import {FingerprintAIO} from '@ionic-native/fingerprint-aio';
-import { TextToSpeech } from '@ionic-native/text-to-speech'
+import { TextToSpeech } from '@ionic-native/text-to-speech';
+import { Network } from '@ionic-native/network';
 
 import { MyApp } from './app.component';
-
 import { AlertService } from "../pages/shared/alert";
 
 // with lazy loading used, no import of page's modules and components is reuqired. 
@@ -23,6 +23,8 @@ import { AlertService } from "../pages/shared/alert";
 import { FormValidationService } from "../pages/product/shared/form-validation.service";
 import { ProdService } from "../pages/product/prod.service";
 import { BackgroundMode } from "@ionic-native/background-mode";
+import { NetStatusProvider } from '../providers/net-status/net-status';
+import { Insomnia } from '@ionic-native/insomnia';
 // import { GoogleMaps } from "@ionic-native/google-maps";
 
 export const firebaseAuth = {
@@ -63,12 +65,15 @@ firebase.initializeApp(firebaseAuth);
     // Geolocation,
     // GoogleMaps,
     AlertService,
+    Network,
     { provide: ErrorHandler, useClass: IonicErrorHandler },
     FormValidationService,
     ProdService,  
     FingerprintAIO,
     TextToSpeech,
-    BackgroundMode
+    BackgroundMode,
+    Insomnia,
+    NetStatusProvider
     // GooglePlus
 
   ]

@@ -41,22 +41,26 @@ var ProdListComponent = (function () {
         this.searchInput.valueChanges
             .debounceTime(500)
             .distinctUntilChanged()
-            .switchMap(function (searchTerm) {
-            // to filter array of objects
-            return _this.prodService.getHeroes()
-                .map(function (prods) { return prods.filter(function (obj) {
-                if (_this.options.indexOf(searchTerm) >= 0) {
-                    return obj.type === searchTerm;
-                }
-                else {
-                    return obj;
-                }
-            }); });
-        })
-            .subscribe(function (heroes) {
-            console.log('next: ', heroes);
-            _this.heroes = heroes;
-        }, function (error) { return _this.errorMessage = error; }, function () { return console.log('Stream is over'); });
+            .switchMap(searchTerm=> {
+                // to filter array of objects
+                return _this.prodService.getHeroes()
+                    .map(prods=> {
+                        return prods.filter(obj=> {
+                            if (_this.options.indexOf(searchTerm) >= 0) {
+                                return obj.type === searchTerm;
+                            }
+                            else {
+                                return obj;
+                            }
+                        });
+                    });
+            })
+            .subscribe(heroes=> {
+                console.log('next: ', heroes);
+                _this.heroes = heroes;
+            },
+            error=> { return _this.errorMessage = error; },
+            ()=> { return console.log('Stream is over'); });
     };
     ProdListComponent.prototype.onDelete = function (hero) {
         // fire deleteProdEvent and pass hero to parent componemt - i.e., heroes.component
